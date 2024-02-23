@@ -1,0 +1,38 @@
+#!/bin/bash
+##Move to /home directory
+echo "Changing Directory..."
+cd
+#
+
+
+##Fix possible previous attempts to install metasploit/armitage
+echo "Fixing possible previous mistakes... (no offense)"
+echo "File does not exist errors are common here, this just means you haven't installed Metasploit previously."
+echo "Those errors will not impact the install."
+sudo rm -r /opt/armitage > /dev/null
+sudo rm -r /usr/local/bin/armitage > /dev/null
+sudo rm -r /usr/local/bin/teamserver > /dev/null
+
+msfdb init > /dev/null
+#
+
+##Manually install armitage
+echo "Installing Armitage..."
+cd /opt
+sudo git clone https://github.com/TSQTT-Cyber-Lab/TSQTT-CyberRange.git > /dev/null
+cd armitage
+sudo ./package.sh > /dev/null
+cd release/unix
+sudo bash -c 'printf "#!/bin/sh\njava -XX:+AggressiveHeap -XX:+UseParallelGC -jar /opt/armitage/release/unix/armitage.jar \$@\n" > armitage'
+sudo ln -s /opt/armitage/release/unix/armitage /usr/local/bin/armitage > /dev/null
+sudo perl -pi -e 's/armitage.jar/\/opt\/armitage\/release\/unix\/armitage.jar/g' /opt/armitage/release/unix/teamserver > /dev/null
+#
+
+##Create database.yml file
+sudo sh -c "echo export MSF_DATABASE_CONFIG=~/.msf4/database.yml >> /etc/profile"
+sudo chown -R `whoami` ~/.msf4
+#
+
+## End and close out
+echo "So... That should be it, run 'sudo -E armitage' to start armitage and 'sudo msfconsole' to start metasploit"
+#
